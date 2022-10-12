@@ -1,4 +1,4 @@
-package juandahurt.payan.modules.feed
+package juandahurt.payan.modules.feed.ui
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
