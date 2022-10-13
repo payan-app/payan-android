@@ -1,12 +1,11 @@
 package juandahurt.payan.modules.feed.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.runtime.Composable
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -18,14 +17,24 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import juandahurt.payan.core.network.NetworkManager
+import juandahurt.payan.modules.feed.data.FeedDataRemoteDataRepository
+import juandahurt.payan.modules.feed.interfaces.FeedService
+import juandahurt.payan.modules.feed.models.FeedData
+import juandahurt.payan.modules.feed.models.FeedPlaceCategory
 import juandahurt.purace.ui.basic.text.PuraceTextView
 import juandahurt.purace.ui.basic.image.PuraceImageView
 import juandahurt.purace.ui.style.PuraceStyle
+import retrofit2.Retrofit
+import retrofit2.create
 
 @Composable
-fun FeedPageView() {
-    Column {
-        PlaceCategories()
+fun FeedPageView(viewModel: FeedViewModel) {
+    if (viewModel.viewState.value.isLoading) {
+        CircularProgressIndicator()
+    }
+    if (viewModel.viewState.value.data != null) {
+        PlaceCategories(data = viewModel.viewState.value.data!!)
     }
 }
 // region Place categories
@@ -34,22 +43,15 @@ private const val placeCategorySubtitle = "Adentrate en el corazón de la ciudad
 private const val dummyImage = "https://payan-dev-images.s3.us-east-2.amazonaws.com/santo-domingo.jpg" // TODO: remove
 
 @Composable
-fun PlaceCategories() {
-    Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .fillMaxWidth()
-            .verticalScroll(state = rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(22.dp)
+fun PlaceCategories(data: FeedData) {
+    LazyColumn(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        PlaceCategoriesHeader()
-        Column(
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            PlaceCategory()
-            PlaceCategory()
-            PlaceCategory()
-            PlaceCategory()
+        item {
+            PlaceCategoriesHeader()
+        }
+        items(data.placeCategories.size) { index ->
+            PlaceCategory(data = data.placeCategories[index])
         }
     }
 }
@@ -75,7 +77,7 @@ fun PlaceCategoriesHeader() {
 }
 
 @Composable
-fun PlaceCategory() {
+fun PlaceCategory(data: FeedPlaceCategory) {
     val localConfiguration = LocalConfiguration.current
     val screenHeight = localConfiguration.screenHeightDp.dp
 
@@ -87,7 +89,7 @@ fun PlaceCategory() {
             .clip(RoundedCornerShape(10.dp, 10.dp, 10.dp, 10.dp))
     ) {
         PuraceImageView(
-            url = dummyImage,
+            url = data.imageUrl,
             modifier = Modifier
                 .fillMaxSize()
                 .background(Color.Gray)
@@ -126,13 +128,13 @@ fun PlaceCategory() {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     PuraceTextView(
-                        text = "Iglesias",
+                        text = data.title,
                         size = 16,
                         weight = FontWeight.Medium,
                         color = Color.White
                     )
                     PuraceTextView(
-                        text = "3 lugares",
+                        text = "${data.numberOfPlaces} lugares",
                         color = Color.White,
                         size = 10
                     )
