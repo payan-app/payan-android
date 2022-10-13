@@ -28,7 +28,7 @@ class FeedViewModel(
         }
     }
 
-    suspend fun getData() {
+    private suspend fun getData() {
         repository.getData()
             .onSuccess { data ->
                 setState {

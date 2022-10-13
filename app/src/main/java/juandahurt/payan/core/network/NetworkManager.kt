@@ -12,6 +12,8 @@ import javax.net.ssl.X509TrustManager
 import javax.security.cert.CertificateException
 
 class NetworkManager private constructor() {
+    private var baseUrl: String? = null
+
     companion object {
         private var shared: NetworkManager? = null
 
@@ -27,9 +29,16 @@ class NetworkManager private constructor() {
         }
     }
 
+    fun provideBaseUrl(baseUrl: String) {
+        this.baseUrl = baseUrl
+    }
+
     fun getRetrofitInstance(): Retrofit {
+        if (baseUrl == null) {
+            throw Exception("You have not provided a baseUrl.")
+        }
         return Retrofit.Builder()
-            .baseUrl("https://payan-dev.vercel.app")
+            .baseUrl(baseUrl)
             .client(getUnsafeOkHttpClient().build())
             .addConverterFactory(GsonConverterFactory.create())
             .build()
